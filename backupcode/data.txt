@@ -1,0 +1,45 @@
+import streamlit as st
+import pandas as pd
+
+#show data
+def load_data():
+    df= pd.read_csv("covid_19_indonesia_time_series_all.csv")
+    return df
+
+def show_data():
+    df= load_data()
+    selected_columns = ['Location'] + list(df.loc[:, 'New Cases':'Total Recovered'].columns)
+    df_selected = df[selected_columns]
+    st.subheader("Data Covid-19 Indonesia 🔴⚪")
+    st.dataframe(df_selected.head(10))
+    
+
+# Fungsi untuk total kasus
+def total_case():    
+    df = load_data()
+    total_kasus = df['Total Cases'].sum()
+    return total_kasus
+
+# Fungsi untuk total kematian
+def total_death():
+    df = load_data()
+    total_mati = df['Total Deaths'].sum()
+    return total_mati
+
+# Fungsi untuk total sembuh
+def total_recovery():
+    df = load_data()
+    total_sembuh = df['Total Recovered'].sum()
+    return total_sembuh
+
+# Tampilkan scoreboard/metrik dalam 3 kolom
+def kolom():
+    kasus = total_case()
+    kematian = total_death()
+    sembuh = total_recovery()
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric(label="🦠 Total Kasus", value=f"{kasus/1000:.1f}K",border=True)
+    col2.metric(label="💀 Total Kematian", value=f"{kematian/1000:.1f}K", border=True)
+    col3.metric(label="💚 Total Sembuh", value=f"{sembuh/1000:.1f}K", border=True)
