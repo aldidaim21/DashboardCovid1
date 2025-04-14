@@ -1,45 +1,77 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 #show data
 def load_data():
     df= pd.read_csv("covid_19_indonesia_time_series_all.csv")
     return df
 
-def show_data():
-    df= load_data()
+#select box
+def filter_data(df, year=None):
+    if year:
+         df = df[df['Date'].astype(str).str.contains(str(year))]
+    return df
+
+def select_year():
+     return st.sidebar.selectbox(
+        "Pilih Tahun 📅",
+        options=[None, 2020, 2021, 2022],
+        format_func=lambda x: "Semua Tahun" if x is None else x
+    )
+
+def show_data(df):
     selected_columns = ['Location'] + list(df.loc[:, 'New Cases':'Total Recovered'].columns)
     df_selected = df[selected_columns]
     st.subheader("Data Covid-19 Indonesia 🔴⚪")
     st.dataframe(df_selected.head(10))
     
+    #discribe
+    st.subheader("Statistik Deskriptif Dataset")
+    st.write(df_selected.describe())
 
-# Fungsi untuk total kasus
-def total_case():    
-    df = load_data()
-    total_kasus = df['Total Cases'].sum()
+#total kasus
+def total_case(df):
+    total_kasus= df['New Cases'].sum()
     return total_kasus
 
-# Fungsi untuk total kematian
-def total_death():
-    df = load_data()
-    total_mati = df['Total Deaths'].sum()
-    return total_mati
+#total kematian
+def total_death(df):
+    total_kematian= df['New Deaths'].sum()
+    return total_kematian
 
-# Fungsi untuk total sembuh
-def total_recovery():
-    df = load_data()
-    total_sembuh = df['Total Recovered'].sum()
-    return total_sembuh
+#total kesembuhan
+def total_recovery(df):
+    total_kesembuhan= df['New Recovered'].sum()
+    return total_kesembuhan
 
-# Tampilkan scoreboard/metrik dalam 3 kolom
-def kolom():
-    kasus = total_case()
-    kematian = total_death()
-    sembuh = total_recovery()
+def kolom1(df):
+    kasus= total_case(df) + 37
+    kematian= total_death(df) + 20
+    sembuh= total_recovery(df) + 75
 
     col1, col2, col3 = st.columns(3)
+    col1.metric(label="Total Kasus 🦠", value=f"{kasus/1000:.1f}K", border=True)
+    col2.metric(label="Total Kematian 💀", value=f"{kematian/1000:.1f}K", border=True)
+    col3.metric(label="Total Recovery 💖", value=f"{sembuh/1000:.1f}K", border=True)
 
-    col1.metric(label="🦠 Total Kasus", value=f"{kasus/1000:.1f}K",border=True)
-    col2.metric(label="💀 Total Kematian", value=f"{kematian/1000:.1f}K", border=True)
-    col3.metric(label="💚 Total Sembuh", value=f"{sembuh/1000:.1f}K", border=True)
+
+def pie_chart1(df):
+    total_kematian= total_death(df)
+    total_sembuh= total_recovery(df)
+
+    data = {
+        'Status' : ['Meninggal', 'Sembuh'],
+        'Jumlah' : [total_kematian, total_sembuh]
+    }
+
+    fig = px.pie(
+        data,
+        names='Status',
+        values='Jumlah',
+        title='Perbandingan Total Kematian VS Total Kesembuhan',
+        hole=0.5,
+        color_discrete_sequence=['#02f7b2','#ed2b5f']  
+    )
+
+    st.plotly_chart(fig, use_container_width=True)

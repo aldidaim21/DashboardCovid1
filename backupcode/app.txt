@@ -11,8 +11,22 @@ st.sidebar.title("Navigasi")
 menu= st.sidebar.radio("Pilih Halaman",["Home","Halaman Data"])
 
 if menu == "Home":
+    #judul
     judul()
-    kolom()
+    
+    #filtering
+    year= select_year()
+    df=load_data()
+    df_filtered= filter_data(df, year)
+    #kolom 1
+    kolom1(df_filtered)
+    pie_chart1(df_filtered)
 elif menu == "Halaman Data":
     judul()
-    show_data()
+    
+    #filtering
+    year= select_year()
+    df=load_data()
+    df_filtered= filter_data(df, year)
+    #show data
+    show_data(df_filtered)
