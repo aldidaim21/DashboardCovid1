@@ -133,3 +133,46 @@ def bar_chart2(df):
     fig.update_layout(xaxis_title='Provinsi', yaxis_title='Total Kesembuhan', title_x=0.5)
 
     st.plotly_chart(fig, use_container_width=True)
+
+def map_chart(df, year=None):
+    # Konversi kolom Date
+    df['Date'] = pd.to_datetime(df['Date'])
+
+    # Filter data berdasarkan tahun
+    if year:
+        df = df[df['Date'].dt.year == year]
+
+    # Agregasi data per lokasi
+    df_agg = df.groupby(['Location', 'Latitude', 'Longitude'], as_index=False)['New Cases'].sum()
+    df_map = df_agg.dropna(subset=['Latitude', 'Longitude', 'New Cases'])
+
+    # Validasi data
+    if df_map.empty:
+        st.info("⚠️ Tidak ada data untuk ditampilkan di peta.")
+        return
+
+    # Buat scatter mapbox
+    fig = px.scatter_mapbox(
+        df_map,
+        lat="Latitude",
+        lon="Longitude",
+        size="New Cases",
+        color="New Cases",
+        hover_name="Location",
+        zoom=3,
+        center={"lat": -2.5, "lon": 118},  # Fokus Indonesia
+        size_max=20,
+        opacity=0.7,
+        color_continuous_scale="OrRd",
+        title=f"Sebaran Kasus Baru Covid-19 di Indonesia ({year if year else 'Semua Tahun'})"
+    )
+
+    # Gunakan style default Mapbox (tanpa perlu token khusus)
+    fig.update_layout(
+        mapbox_style="carto-positron",  # Alternatif: "open-street-map", "carto-darkmatter"
+        height=600,
+        margin={"r":0,"t":50,"l":0,"b":0}
+    )
+
+    # Tampilkan peta di Streamlit
+    st.plotly_chart(fig, use_container_width=True)

@@ -25,6 +25,7 @@ if menu == "Home":
     #barchart
     bar_chart1(df_filtered)
     bar_chart2(df_filtered)
+    map_chart(df_filtered)
 
 
 # Halaman DATA
